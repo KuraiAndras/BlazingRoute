@@ -15,23 +15,26 @@ Artists.razor:
 ```
 
 ```csharp
-public static partial class Routes
+namespace Your.ProjectName
 {
-    public static ImmutableArray<string> All { get; } = new []
+    public static partial class Routes
     {
-        "/",
-        "/artists/{Id:guid}",
-    }.ToImmutableArray();
+        public static ImmutableArray<string> All { get; } = new []
+        {
+            "/",
+            "/artists/{Id:guid}",
+        }.ToImmutableArray();
 
-    /// <summary>
-    /// /artists/{Id:guid}
-    /// </summary>
-    public static string Index() => $"/";
+        /// <summary>
+        /// /
+        /// </summary>
+        public static string Index() => $"/";
 
-    /// <summary>
-    /// /artists/{Id:guid}
-    /// </summary>
-    public static string Artists(Guid Id) => $"/artists/{Id.ToString("D", System.Globalization.CultureInfo.InvariantCulture)}";
+        /// <summary>
+        /// /artists/{Id:guid}
+        /// </summary>
+        public static string Artists(Guid Id) => $"/artists/{Id.ToString("D", System.Globalization.CultureInfo.InvariantCulture)}";
+    }
 }
 ```
 
@@ -42,7 +45,7 @@ public static partial class Routes
 
 <NavLink class="nav-link" href="@Routes.Index()">Home Link</NavLink>
 
-<button class="btn btn-primary" @onClick="@Navigate">5th Artist</button>
+<button class="btn btn-primary" @onClick="@Navigate">Some Artist</button>
 
 @code {
     private void Navigate() => Navigation.NavigateTo(Routes.Artists(Guid.NewGuid()));
