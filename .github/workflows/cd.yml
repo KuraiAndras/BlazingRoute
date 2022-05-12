@@ -1,0 +1,39 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v2
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.13
+        with:
+          versionSpec: '5.x'
+
+      - name: Determine Version
+        uses: gittools/actions/gitversion/execute@v0.9.13
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --version ${{ steps.gitversion.outputs.nuGetVersionV2 }} --configuration Release
+
+      - name: Pack
+        run: dotnet pack --configuration Release
+
+      - name: Push To Nuget
+        run: dotnet nuget push **/*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
