@@ -21,10 +21,10 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --version ${GITHUB_REF#refs/*/} --configuration Release
+        run: dotnet build -p:Version=${GITHUB_REF#refs/*/} --configuration Release
 
       - name: Pack
-        run: dotnet pack --configuration Release
+        run: dotnet pack -p:Version=${GITHUB_REF#refs/*/} --configuration Release
 
       - name: Push To Nuget
         run: dotnet nuget push **/*.nupkg -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
