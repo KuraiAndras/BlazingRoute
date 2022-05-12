@@ -1,9 +1,105 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+@page "/non-nullable-string/{StringParameter}"
+@page "/non-nullable-bool/{BoolParameter:bool}"
+@page "/non-nullable-DateTime/{DateTimeParameter:datetime}"
+@page "/non-nullable-decimal/{DecimalParameter:decimal}"
+@page "/non-nullable-double/{DoubleParameter:double}"
+@page "/non-nullable-float/{FloatParameter:float}"
+@page "/non-nullable-Guid/{GuidParameter:guid}"
+@page "/non-nullable-int/{IntParameter:int}"
+@page "/non-nullable-long/{LongParameter:long}"
 
-<h1>Hello, world!</h1>
+@page "/nullable-string/{StringParameter?}"
+@page "/nullable-bool/{BoolParameter:bool?}"
+@page "/nullable-DateTime/{DateTimeParameter:datetime?}"
+@page "/nullable-decimal/{DecimalParameter:decimal?}"
+@page "/nullable-double/{DoubleParameter:double?}"
+@page "/nullable-float/{FloatParameter:float?}"
+@page "/nullable-Guid/{GuidParameter:guid?}"
+@page "/nullable-int/{IntParameter:int?}"
+@page "/nullable-long/{LongParameter:long?}"
 
-Welcome to your new app.
+<p>
+	Non-Nullables:
+</p>
+<p>
+	StringParameter: @StringParameter
+</p>
+<p>
+	BoolParameter: @BoolParameter
+</p>
+<p>
+	DateTimeParameter: @DateTimeParameter
+</p>
+<p>
+	DecimalParameter: @DecimalParameter
+</p>
+<p>
+	DoubleParameter: @DoubleParameter
+</p>
+<p>
+	FloatParameter: @FloatParameter
+</p>
+<p>
+	GuidParameter: @GuidParameter
+</p>
+<p>
+	IntParameter: @IntParameter
+</p>
+<p>
+	LongParameter: @LongParameter
+</p>
+<p>
+	Nullables:
+</p>
+<p>
+	NullableStringParameter: @NullableStringParameter
+</p>
+<p>
+	NullableBoolParameter: @NullableBoolParameter
+</p>
+<p>
+	NullableDateTimeParameter: @NullableDateTimeParameter
+</p>
+<p>
+	NullableDecimalParameter: @NullableDecimalParameter
+</p>
+<p>
+	NullableDecimalParameter: @NullableDecimalParameter
+</p>
+<p>
+	NullableDoubleParameter: @NullableDoubleParameter
+</p>
+<p>
+	NullableGuidParameter: @NullableGuidParameter
+</p>
+<p>
+	NullableIntParameter: @NullableIntParameter
+</p>
+<p>
+	NullableLongParameter: @NullableLongParameter
+</p>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code
+{
+	[Parameter] public string StringParameter { get; set; } = default!;
+	[Parameter] public bool BoolParameter { get; set; }
+	[Parameter] public DateTime DateTimeParameter { get; set; }
+	[Parameter] public decimal DecimalParameter { get; set; }
+	[Parameter] public double DoubleParameter { get; set; }
+	[Parameter] public float FloatParameter { get; set; }
+	[Parameter] public Guid GuidParameter { get; set; }
+	[Parameter] public int IntParameter { get; set; }
+	[Parameter] public long LongParameter { get; set; }
+
+	[Parameter] public string? NullableStringParameter { get; set; } = default!;
+	[Parameter] public bool? NullableBoolParameter { get; set; }
+	[Parameter] public DateTime? NullableDateTimeParameter { get; set; }
+	[Parameter] public decimal? NullableDecimalParameter { get; set; }
+	[Parameter] public double? NullableDoubleParameter { get; set; }
+	[Parameter] public float? NullableFloatParameter { get; set; }
+	[Parameter] public Guid? NullableGuidParameter { get; set; }
+	[Parameter] public int? NullableIntParameter { get; set; }
+	[Parameter] public long? NullableLongParameter { get; set; }
+}
