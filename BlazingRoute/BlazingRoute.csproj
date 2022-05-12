@@ -8,6 +8,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     
     <Authors>Kurai András</Authors>
+    <PackageTags>Blazor;Route;Routing;Source Generator</PackageTags>
+    <Description>Generate blazor routes with strongly types methods</Description>
 
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
