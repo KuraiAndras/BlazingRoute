@@ -20,35 +20,39 @@
 @page "/nullable-int/{IntParameter:int?}"
 @page "/nullable-long/{LongParameter:long?}"
 
+@page "/multiple/{MultipleDoubeParameter:double}/{MultipleIntParameter:int?}"
+
+@inject NavigationManager Navigation;
+
 <p>
 	Non-Nullables:
 </p>
 <p>
-	StringParameter: @StringParameter
+	StringParameter: @StringParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo(Routes.Index1("hello")))">Navigate</button>
 </p>
 <p>
-	BoolParameter: @BoolParameter
+	BoolParameter: @BoolParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo(Routes.Index2(true)))">Navigate</button>
 </p>
 <p>
-	DateTimeParameter: @DateTimeParameter
+	DateTimeParameter: @DateTimeParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo(Routes.Index3(DateTime.Now)))">Navigate</button>
 </p>
 <p>
-	DecimalParameter: @DecimalParameter
+	DecimalParameter: @DecimalParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo(Routes.Index4(1234m)))">Navigate</button>
 </p>
 <p>
-	DoubleParameter: @DoubleParameter
+	DoubleParameter: @DoubleParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo(Routes.Index5(2.5)))">Navigate</button>
 </p>
 <p>
-	FloatParameter: @FloatParameter
+	FloatParameter: @FloatParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo(Routes.Index6(2.6f)))">Navigate</button>
 </p>
 <p>
-	GuidParameter: @GuidParameter
+	GuidParameter: @GuidParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo(Routes.Index7(Guid.NewGuid())))">Navigate</button>
 </p>
 <p>
-	IntParameter: @IntParameter
+	IntParameter: @IntParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo(Routes.Index8(3)))">Navigate</button>
 </p>
 <p>
-	LongParameter: @LongParameter
+	LongParameter: @LongParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo(Routes.Index9(long.MaxValue)))">Navigate</button>
 </p>
 <p>
 	Nullables:
@@ -81,6 +85,16 @@
 	NullableLongParameter: @NullableLongParameter
 </p>
 
+<p>
+	Multiple parameters:
+</p>
+<p>
+	MultipleDoubeParameter: @MultipleDoubeParameter
+</p>
+<p>
+	MultipleIntParameter: @MultipleIntParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateTo(Routes.Index19(3.5f, 42)))">Navigate</button>
+</p>
+
 @code
 {
 	[Parameter] public string StringParameter { get; set; } = default!;
@@ -93,7 +107,7 @@
 	[Parameter] public int IntParameter { get; set; }
 	[Parameter] public long LongParameter { get; set; }
 
-	[Parameter] public string? NullableStringParameter { get; set; } = default!;
+	[Parameter] public string? NullableStringParameter { get; set; }
 	[Parameter] public bool? NullableBoolParameter { get; set; }
 	[Parameter] public DateTime? NullableDateTimeParameter { get; set; }
 	[Parameter] public decimal? NullableDecimalParameter { get; set; }
@@ -102,4 +116,7 @@
 	[Parameter] public Guid? NullableGuidParameter { get; set; }
 	[Parameter] public int? NullableIntParameter { get; set; }
 	[Parameter] public long? NullableLongParameter { get; set; }
+
+	[Parameter] public double MultipleDoubeParameter { get; set; }
+	[Parameter] public int? MultipleIntParameter { get; set; }
 }
