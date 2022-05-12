@@ -14,7 +14,26 @@ public class RouteGenerator : ISourceGenerator
 
     private static readonly Regex ParametersRegex = new(@"\{(.*?)\}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
-    public static string GenerateClass(ImmutableArray<PageRoutes> routes, string? assemblyName)
+    public void Initialize(GeneratorInitializationContext context)
+    {
+        // #if DEBUG
+        //         if (!System.Diagnostics.Debugger.IsAttached)
+        //         {
+        //             System.Diagnostics.Debugger.Launch();
+        //         }
+        // #endif
+    }
+
+    public void Execute(GeneratorExecutionContext context)
+    {
+        var routes = GetRoutes(context);
+
+        var source = GenerateClass(routes, context.Compilation.AssemblyName);
+
+        context.AddSource("Routes", source);
+    }
+
+    private static string GenerateClass(ImmutableArray<PageRoutes> routes, string? assemblyName)
     {
         var builder = new StringBuilder();
 
@@ -75,11 +94,16 @@ public static partial class Routes
 
             RouteParameter parameter;
 
+            // strings are only marked as: @page "/{parameter}"
             if (parts.Length == 1)
             {
-                var parameterName = parts[0];
-                var isNullable = parameterName.EndsWith("?") || parameterName.StartsWith("*");
-                parameter = new RouteParameter(isNullable ? "string?" : "string", parameterName.TrimEnd('?').TrimStart('*'));
+                var namePart = parts[0];
+                var isNullable = namePart.EndsWith("?") || namePart.StartsWith("*");
+
+                var parameterName = namePart.TrimEnd('?').TrimStart('*');
+                var parameterType = isNullable ? "string?" : "string";
+
+                parameter = new RouteParameter(parameterType, parameterName);
             }
             else
             {
@@ -146,25 +170,6 @@ public static partial class Routes
         }
 
         builder.Append(") => $\"").Append(interpolatedPath).AppendLine("\";");
-    }
-
-    public void Initialize(GeneratorInitializationContext context)
-    {
-        // #if DEBUG
-        //         if (!System.Diagnostics.Debugger.IsAttached)
-        //         {
-        //             System.Diagnostics.Debugger.Launch();
-        //         }
-        // #endif
-    }
-
-    public void Execute(GeneratorExecutionContext context)
-    {
-        var routes = GetRoutes(context);
-
-        var source = GenerateClass(routes, context.Compilation.AssemblyName);
-
-        context.AddSource("Routes", source);
     }
 
     private static ImmutableArray<PageRoutes> GetRoutes(GeneratorExecutionContext context)
