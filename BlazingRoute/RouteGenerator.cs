@@ -170,7 +170,7 @@ public static partial class Routes
         }
 
 
-        builder.Append(") => System.Web.HttpUtility.UrlEncode($\"").Append(interpolatedPath).AppendLine("\");");
+        builder.Append(") => $\"").Append(interpolatedPath).AppendLine("\";");
     }
 
     private static ImmutableArray<PageRoutes> GetRoutes(GeneratorExecutionContext context)
