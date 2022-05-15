@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Xml.Serialization;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,7 +15,19 @@ public class RouteGenerator : ISourceGenerator
 
     record PageRoutes(string PageName, ImmutableArray<string> RouteStrings);
 
-    record GenerationOptions(string ClassName = "Routes", string? Namespace = null);
+    public class GenerationOptions
+    {
+        public string ClassName { get; set; } = default!;
+        public string Namespace { get; set; } = default!;
+
+        public GenerationOptions MakeDefault(GeneratorExecutionContext context)
+        {
+            ClassName ??= "Routes";
+            Namespace ??= context.Compilation.AssemblyName ?? throw new InvalidOperationException("Compilation has no AssemblyName");
+
+            return this;
+        }
+    }
 
     private const string RouteAttributeName = "Microsoft.AspNetCore.Components.RouteAttribute";
 
@@ -37,31 +49,37 @@ public class RouteGenerator : ISourceGenerator
 
         var routes = GetRoutes(context);
 
-        var source = GenerateClass(routes, context.Compilation.AssemblyName, options);
+        var source = GenerateClass(routes, options);
 
         context.AddSource(options.ClassName, source);
     }
 
     private static GenerationOptions LoadOptions(GeneratorExecutionContext context)
     {
-        var optionsFile = context.AdditionalFiles.SingleOrDefault(f => Path.GetFileName(f.Path).ToLower() == "routegeneration.json");
+        static GenerationOptions MakeDefault(GeneratorExecutionContext context, GenerationOptions? options = default!) =>
+            options?.MakeDefault(context) ?? new GenerationOptions().MakeDefault(context);
 
-        if (optionsFile is null) return new();
+        var optionsFile = context.AdditionalFiles.SingleOrDefault(f => Path.GetFileName(f.Path) == "RouteGeneration.xml");
+
+        if (optionsFile is null) return MakeDefault(context);
 
         var content = File.ReadAllText(optionsFile.Path);
 
-        if (string.IsNullOrWhiteSpace(content)) return new();
+        if (string.IsNullOrWhiteSpace(content)) return MakeDefault(context);
 
         try
         {
-            return JsonSerializer.Deserialize<GenerationOptions>(content, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-            }) ?? new();
+            var serializer = new XmlSerializer(typeof(GenerationOptions));
+
+            using var stream = new FileStream(optionsFile.Path, FileMode.Open, FileAccess.Read);
+
+            var options = serializer.Deserialize(stream) as GenerationOptions ?? new();
+
+            return MakeDefault(context, options);
         }
         catch
         {
-            return new();
+            return MakeDefault(context);
         }
     }
 
@@ -116,14 +134,14 @@ public class RouteGenerator : ISourceGenerator
             .ToImmutableArray();
     }
 
-    private static string GenerateClass(ImmutableArray<PageRoutes> routes, string? assemblyName, GenerationOptions options)
+    private static string GenerateClass(ImmutableArray<PageRoutes> routes, GenerationOptions options)
     {
         var builder = new StringBuilder();
 
         builder.Append(
 @"using System.Collections.Immutable;
 
-namespace ").Append(options.Namespace ?? assemblyName).Append(@";
+namespace ").Append(options.Namespace).Append(@";
 
 public static partial class ").AppendLine(options.ClassName).Append(@"
 {");
