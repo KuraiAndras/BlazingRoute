@@ -61,7 +61,7 @@ public class RouteGenerator : ISourceGenerator
 
         var optionsFile = context.AdditionalFiles.SingleOrDefault(f => Path.GetFileName(f.Path) == "RouteGeneration.xml");
 
-        if (optionsFile is null) return MakeDefault(context);
+        if (optionsFile is null || !File.Exists(optionsFile.Path)) return MakeDefault(context);
 
         var content = File.ReadAllText(optionsFile.Path);
 
