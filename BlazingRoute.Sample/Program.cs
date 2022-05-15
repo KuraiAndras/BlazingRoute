@@ -1,4 +1,5 @@
 using BlazingRoute.Sample;
+
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
