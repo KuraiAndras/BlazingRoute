@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Serialization;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,39 +11,139 @@ namespace BlazingRoute;
 [Generator]
 public class RouteGenerator : ISourceGenerator
 {
+    record RouteParameter(string ParameterType, string ParameterName);
+
+    record PageRoutes(string PageName, ImmutableArray<string> RouteStrings);
+
+    public class GenerationOptions
+    {
+        public string ClassName { get; set; } = default!;
+        public string Namespace { get; set; } = default!;
+
+        public GenerationOptions MakeDefault(GeneratorExecutionContext context)
+        {
+            ClassName ??= "Routes";
+            Namespace ??= context.Compilation.AssemblyName ?? throw new InvalidOperationException("Compilation has no AssemblyName");
+
+            return this;
+        }
+    }
+
     private const string RouteAttributeName = "Microsoft.AspNetCore.Components.RouteAttribute";
 
     private static readonly Regex ParametersRegex = new(@"\{(.*?)\}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     public void Initialize(GeneratorInitializationContext context)
     {
-        // #if DEBUG
-        //         if (!System.Diagnostics.Debugger.IsAttached)
-        //         {
-        //             System.Diagnostics.Debugger.Launch();
-        //         }
-        // #endif
+        //#if DEBUG
+        //        if (!System.Diagnostics.Debugger.IsAttached)
+        //        {
+        //            System.Diagnostics.Debugger.Launch();
+        //        }
+        //#endif
     }
 
     public void Execute(GeneratorExecutionContext context)
     {
+        var options = LoadOptions(context);
+
         var routes = GetRoutes(context);
 
-        var source = GenerateClass(routes, context.Compilation.AssemblyName);
+        var source = GenerateClass(routes, options);
 
-        context.AddSource("Routes", source);
+        context.AddSource(options.ClassName, source);
     }
 
-    private static string GenerateClass(ImmutableArray<PageRoutes> routes, string? assemblyName)
+    private static GenerationOptions LoadOptions(GeneratorExecutionContext context)
+    {
+        static GenerationOptions MakeDefault(GeneratorExecutionContext context, GenerationOptions? options = default!) =>
+            options?.MakeDefault(context) ?? new GenerationOptions().MakeDefault(context);
+
+        var optionsFile = context.AdditionalFiles.SingleOrDefault(f => Path.GetFileName(f.Path) == "RouteGeneration.xml");
+
+        if (optionsFile is null || !File.Exists(optionsFile.Path)) return MakeDefault(context);
+
+        var content = File.ReadAllText(optionsFile.Path);
+
+        if (string.IsNullOrWhiteSpace(content)) return MakeDefault(context);
+
+        try
+        {
+            var serializer = new XmlSerializer(typeof(GenerationOptions));
+
+            using var stream = new FileStream(optionsFile.Path, FileMode.Open, FileAccess.Read);
+
+            var options = serializer.Deserialize(stream) as GenerationOptions ?? new();
+
+            return MakeDefault(context, options);
+        }
+        catch
+        {
+            return MakeDefault(context);
+        }
+    }
+
+    private static ImmutableArray<PageRoutes> GetRoutes(GeneratorExecutionContext context)
+    {
+        // When blazor is using source generators,
+        // then the classes generated from .razor files are not available.
+        // We need to handle both classes and razor files
+
+        var routesFromClasses = context.Compilation.SyntaxTrees
+            .SelectMany(s => s.GetRoot().DescendantNodes())
+            .OfType<ClassDeclarationSyntax>()
+            .Where(c => c.AttributeLists
+                .SelectMany(x => x.Attributes)
+                .Any(attr => attr.Name.ToString() == RouteAttributeName))
+            .Select(component => new PageRoutes
+            (
+                component.Identifier.ToString(),
+                GetRoutes(context.Compilation, component)
+            ))
+            .ToImmutableArray();
+
+        var routesFromRazorFiles = context.AdditionalFiles
+            .Where(f => Path.GetExtension(f.Path) == ".razor")
+            .Select(f =>
+            {
+                var routes = File.ReadAllLines(f.Path)
+                    .Where(l => l.StartsWith("@page"))
+                    .Select(l => l.Trim().Replace("@page ", string.Empty).Replace("\"", string.Empty))
+                    .ToImmutableArray();
+
+                return new PageRoutes
+                (
+                    Path.GetFileNameWithoutExtension(f.Path),
+                    routes.ToImmutableArray()
+                );
+            })
+            .Where(p => p.RouteStrings.Length != 0)
+            .ToImmutableArray();
+
+        // Combine and remove duplicates
+
+        return Enumerable.Empty<PageRoutes>()
+            .Concat(routesFromClasses)
+            .Concat(routesFromRazorFiles)
+            .GroupBy(p => p.PageName)
+            .Select(group => new PageRoutes
+            (
+                group.Key,
+                group.SelectMany(p => p.RouteStrings).Distinct().ToImmutableArray()
+            ))
+            .ToImmutableArray();
+    }
+
+    private static string GenerateClass(ImmutableArray<PageRoutes> routes, GenerationOptions options)
     {
         var builder = new StringBuilder();
 
         builder.Append(
 @"using System.Collections.Immutable;
 
-namespace ").Append(assemblyName).AppendLine(@";
+namespace ").Append(options.Namespace).Append(@";
 
-public static partial class Routes
+public static partial class ").AppendLine(options.ClassName).Append(@"
 {");
 
         builder.AppendLine(
@@ -173,57 +274,6 @@ public static partial class Routes
         builder.Append(") => $\"").Append(interpolatedPath).AppendLine("\";");
     }
 
-    private static ImmutableArray<PageRoutes> GetRoutes(GeneratorExecutionContext context)
-    {
-        // When blazor is using source generators,
-        // then the classes generated from .razor files are not available.
-        // We need to handle both classes and razor files
-
-        var routesFromClasses = context.Compilation.SyntaxTrees
-            .SelectMany(s => s.GetRoot().DescendantNodes())
-            .OfType<ClassDeclarationSyntax>()
-            .Where(c => c.AttributeLists
-                .SelectMany(x => x.Attributes)
-                .Any(attr => attr.Name.ToString() == RouteAttributeName))
-            .Select(component => new PageRoutes
-            (
-                component.Identifier.ToString(),
-                GetRoutes(context.Compilation, component)
-            ))
-            .ToImmutableArray();
-
-        var routesFromRazorFiles = context.AdditionalFiles
-            .Where(f => Path.GetExtension(f.Path) == ".razor")
-            .Select(f =>
-            {
-                var routes = File.ReadAllLines(f.Path)
-                    .Where(l => l.StartsWith("@page"))
-                    .Select(l => l.Trim().Replace("@page ", string.Empty).Replace("\"", string.Empty))
-                    .ToImmutableArray();
-
-                return new PageRoutes
-                (
-                    Path.GetFileNameWithoutExtension(f.Path),
-                    routes.ToImmutableArray()
-                );
-            })
-            .Where(p => p.RouteStrings.Length != 0)
-            .ToImmutableArray();
-
-        // Combine and remove duplicates
-
-        return Enumerable.Empty<PageRoutes>()
-            .Concat(routesFromClasses)
-            .Concat(routesFromRazorFiles)
-            .GroupBy(p => p.PageName)
-            .Select(group => new PageRoutes
-            (
-                group.Key,
-                group.SelectMany(p => p.RouteStrings).Distinct().ToImmutableArray()
-            ))
-            .ToImmutableArray();
-    }
-
     private static ImmutableArray<string> GetRoutes(Compilation compilation, ClassDeclarationSyntax component)
     {
         var semanticModel = compilation.GetSemanticModel(component.SyntaxTree);
@@ -239,7 +289,3 @@ public static partial class Routes
             .ToImmutableArray();
     }
 }
-
-public record RouteParameter(string ParameterType, string ParameterName);
-
-public record PageRoutes(string PageName, ImmutableArray<string> RouteStrings);

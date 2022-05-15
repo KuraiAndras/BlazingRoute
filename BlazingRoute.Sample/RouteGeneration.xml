@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenerationOptions>
+  <ClassName>MyRoutes</ClassName>
+  <Namespace>BlazingRoute.Sample.Routes</Namespace>
+</GenerationOptions>

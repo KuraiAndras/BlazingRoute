@@ -4,9 +4,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-  
+
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    
+
     <Authors>Kurai András</Authors>
     <PackageTags>Blazor;Route;Routing;Source Generator</PackageTags>
     <Description>Generate blazor routes with strongly types methods</Description>

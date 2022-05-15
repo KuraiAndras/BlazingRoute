@@ -2,10 +2,11 @@
 
 Source generator for generating strongly-typed methods for Blazor routes.
 
+## Code generation
+
 For a project a class is generated with methods to retrieve page routes:
 
-Artists.razor:
-
+`Artists.razor`:
 ```razor
 @page "/artists/{Id:guid}"
 
@@ -13,6 +14,14 @@ Artists.razor:
     [Parameter] public Guid Id { get; set; }
 }
 ```
+`Index.razor`:
+```razor
+@page "/"
+
+<h1>Home</h1>
+```
+
+Generates the following `Routes.cs`:
 
 ```csharp
 namespace Your.ProjectName
@@ -38,7 +47,7 @@ namespace Your.ProjectName
 }
 ```
 
-# Usage
+## Usage
 
 ```razor
 @inject NavigationManager Navigation
@@ -50,4 +59,28 @@ namespace Your.ProjectName
 @code {
     private void Navigate() => Navigation.NavigateTo(Routes.Artists(Guid.NewGuid()));
 }
+```
+
+## Options
+
+Code generation can be customized. For a project create a file named `RouteGeneration.xml` in the root of the project. In the project `csproj` reference that as an `Additional file`.
+
+```xml
+  <ItemGroup>
+    <AdditionalFiles Include="RouteGeneration.xml" />
+  </ItemGroup>
+```
+
+| Name      | Usage                            | Default Value               |
+| --------- | -------------------------------- | --------------------------- |
+| ClassName | Name of the generated class      | Routes                      |
+| Namespace | Namespace of the generated class | You project's assembly name |
+
+Sample:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<GenerationOptions>
+  <ClassName>MyRoutes</ClassName>
+  <Namespace>BlazingRoute.Sample.Routes</Namespace>
+</GenerationOptions>
 ```
