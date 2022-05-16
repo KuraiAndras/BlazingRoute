@@ -262,7 +262,7 @@ public static partial class ").AppendLine(options.ClassName).Append(@"
 
         builder.Append("    public static string ").Append(generatedMethodName).Append('(');
 
-        AddParameters(builder, parameterNames, false);
+        AddParameters(builder, parameterNames);
 
         builder.Append(") => $\"").Append(interpolatedPath).AppendLine("\";").AppendLine();
 
@@ -275,10 +275,9 @@ public static partial class ").AppendLine(options.ClassName).Append(@"
     /// ").Append(path).AppendLine(@"
     /// </summary>");
 
-        builder.Append("    public static string ").Append("NavigateTo").Append(generatedMethodName).Append('(')
-            .Append("this Microsoft.AspNetCore.Components.NavigationManager navigationManager");
+        builder.Append("    public static string ").Append("NavigateTo").Append(generatedMethodName).Append('(');
 
-        AddParameters(builder, parameterNames, true);
+        AddParameters(builder, new[] { new RouteParameter("this Microsoft.AspNetCore.Components.NavigationManager", "navigationManager") }.Concat(parameterNames).ToArray());
 
         builder.Append(") => ").Append(generatedMethodName).Append('(');
 
@@ -292,16 +291,14 @@ public static partial class ").AppendLine(options.ClassName).Append(@"
         builder.AppendLine(");").AppendLine();
     }
 
-    private static void AddParameters(StringBuilder builder, RouteParameter[] parameterNames, bool alreadyHasParameter)
+    private static void AddParameters(StringBuilder builder, RouteParameter[] parameterNames)
     {
-        if (alreadyHasParameter) builder.Append(", ");
-
         foreach (var parameter in parameterNames)
         {
             builder.Append(parameter.ParameterType).Append(" ").Append(parameter.ParameterName).Append(", ");
         }
 
-        if (parameterNames.Length > 0 || (alreadyHasParameter && parameterNames.Length == 0))
+        if (parameterNames.Length > 0)
         {
             RemoveTrailingComma(builder);
         }
