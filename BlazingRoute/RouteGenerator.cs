@@ -21,8 +21,8 @@ public class RouteGenerator : ISourceGenerator
     {
         public string ClassName { get; set; } = "Routes";
         public string Namespace { get; set; } = default!;
-        public bool GenerateExtensions { get; set; } = false;
-        public string ExtensionPrefix { get; set; } = "NavigateTo";
+        public bool GenerateExtensions { get; set; } = true;
+        public string ExtensionPrefix { get; set; } = "";
 
         public GenerationOptions MakeDefault(GeneratorExecutionContext context)
         {

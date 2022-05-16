@@ -29,31 +29,31 @@
 	Non-Nullables:
 </p>
 <p>
-	StringParameter: @StringParameter <button class="btn btn-primary" @onclick="@(() => Navigation.Index1("hello"))">Navigate</button>
+	StringParameter: @StringParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex1("hello"))">Navigate</button>
 </p>
 <p>
-	BoolParameter: @BoolParameter <button class="btn btn-primary" @onclick="@(() => Navigation.Index2(true))">Navigate</button>
+	BoolParameter: @BoolParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex2(true))">Navigate</button>
 </p>
 <p>
-	DateTimeParameter: @DateTimeParameter <button class="btn btn-primary" @onclick="@(() => Navigation.Index3(DateTime.Now))">Navigate</button>
+	DateTimeParameter: @DateTimeParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex3(DateTime.Now))">Navigate</button>
 </p>
 <p>
-	DecimalParameter: @DecimalParameter <button class="btn btn-primary" @onclick="@(() => Navigation.Index4(1234m))">Navigate</button>
+	DecimalParameter: @DecimalParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex4(1234m))">Navigate</button>
 </p>
 <p>
-	DoubleParameter: @DoubleParameter <button class="btn btn-primary" @onclick="@(() => Navigation.Index5(2.5))">Navigate</button>
+	DoubleParameter: @DoubleParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex5(2.5))">Navigate</button>
 </p>
 <p>
-	FloatParameter: @FloatParameter <button class="btn btn-primary" @onclick="@(() => Navigation.Index6(2.6f))">Navigate</button>
+	FloatParameter: @FloatParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex6(2.6f))">Navigate</button>
 </p>
 <p>
-	GuidParameter: @GuidParameter <button class="btn btn-primary" @onclick="@(() => Navigation.Index7(Guid.NewGuid()))">Navigate</button>
+	GuidParameter: @GuidParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex7(Guid.NewGuid()))">Navigate</button>
 </p>
 <p>
-	IntParameter: @IntParameter <button class="btn btn-primary" @onclick="@(() => Navigation.Index8(3))">Navigate</button>
+	IntParameter: @IntParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex8(3))">Navigate</button>
 </p>
 <p>
-	LongParameter: @LongParameter <button class="btn btn-primary" @onclick="@(() => Navigation.Index9(long.MaxValue))">Navigate</button>
+	LongParameter: @LongParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex9(long.MaxValue))">Navigate</button>
 </p>
 <p>
 	Nullables:
@@ -93,7 +93,7 @@
 	MultipleDoubeParameter: @MultipleDoubeParameter
 </p>
 <p>
-	MultipleIntParameter: @MultipleIntParameter <button class="btn btn-primary" @onclick="@(() => Navigation.Index19(3.5f, 42))">Navigate</button>
+	MultipleIntParameter: @MultipleIntParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex19(3.5f, 42))">Navigate</button>
 </p>
 
 @code

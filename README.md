@@ -71,10 +71,12 @@ Code generation can be customized. For a project create a file named `RouteGener
   </ItemGroup>
 ```
 
-| Name      | Usage                            | Default Value               |
-| --------- | -------------------------------- | --------------------------- |
-| ClassName | Name of the generated class      | Routes                      |
-| Namespace | Namespace of the generated class | You project's assembly name |
+| Name               | Usage                                                                            | Default Value           |
+| ------------------ | -------------------------------------------------------------------------------- | ----------------------- |
+| ClassName          | Name of the generated class                                                      | Routes                  |
+| Namespace          | Namespace of the generated class                                                 | Project's assembly name |
+| GenerateExtensions | Generate extensions methods for `NavigationManager`                              | true                    |
+| ExtensionPrefix    | Prefix for the extension methods. For example: `NavigateTo` -> `NavigateToIndex` | Empty `string`          |
 
 Sample:
 ```xml
@@ -82,5 +84,7 @@ Sample:
 <GenerationOptions>
   <ClassName>MyRoutes</ClassName>
   <Namespace>BlazingRoute.Sample.Routes</Namespace>
+  <GenerateExtensions>true</GenerateExtensions>
+  <ExtensionPrefix>NavigateTo</ExtensionPrefix>
 </GenerationOptions>
 ```
