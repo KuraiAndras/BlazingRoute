@@ -275,11 +275,11 @@ public static partial class ").AppendLine(options.ClassName)
     /// ").Append(path).AppendLine(@"
     /// </summary>");
 
-        builder.Append("    public static string ").Append(options.ExtensionPrefix).Append(generatedMethodName).Append('(');
+        builder.Append("    public static void ").Append(options.ExtensionPrefix).Append(generatedMethodName).Append('(');
 
         AddParameters(builder, new[] { new RouteParameter("this Microsoft.AspNetCore.Components.NavigationManager", "navigationManager") }.Concat(parameterNames).ToArray());
 
-        builder.Append(") => ").Append(generatedMethodName).Append('(');
+        builder.Append(") => navigationManager.NavigateTo(").Append(generatedMethodName).Append('(');
 
         foreach (var parameter in parameterNames)
         {
@@ -288,7 +288,7 @@ public static partial class ").AppendLine(options.ClassName)
 
         if (parameterNames.Length > 0) RemoveTrailingComma(builder);
 
-        builder.AppendLine(");").AppendLine();
+        builder.AppendLine("));").AppendLine();
     }
 
     private static void AddParameters(StringBuilder builder, RouteParameter[] parameterNames)
