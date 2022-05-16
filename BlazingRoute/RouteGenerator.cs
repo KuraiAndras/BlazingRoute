@@ -19,7 +19,7 @@ public class RouteGenerator : ISourceGenerator
     {
         public string ClassName { get; set; } = default!;
         public string Namespace { get; set; } = default!;
-        public bool ExtensionMethods { get; set; } = false;
+        public bool GenerateExtensions { get; set; } = false;
 
         public GenerationOptions MakeDefault(GeneratorExecutionContext context)
         {
@@ -168,7 +168,7 @@ public static partial class ").AppendLine(options.ClassName).Append(@"
             {
                 var path = route.RouteStrings[j];
 
-                CreateInterpolationMethod(builder, route.PageName, path, j);
+                CreateInterpolationMethod(builder, route.PageName, path, j, options);
             }
 
             if (i != routes.Length - 1) builder.AppendLine();
@@ -180,7 +180,7 @@ public static partial class ").AppendLine(options.ClassName).Append(@"
         return builder.ToString();
     }
 
-    private static void CreateInterpolationMethod(StringBuilder builder, string methodName, string path, int index)
+    private static void CreateInterpolationMethod(StringBuilder builder, string pageName, string path, int index, GenerationOptions options)
     {
         // Generate parameter data
 
@@ -258,22 +258,56 @@ public static partial class ").AppendLine(options.ClassName).Append(@"
     /// ").Append(path).AppendLine(@"
     /// </summary>");
 
-        builder.Append("    public static string ").Append(methodName).Append(index != 0 ? index.ToString() : string.Empty).Append("(");
+        var generatedMethodName = pageName + (index != 0 ? index.ToString() : string.Empty);
+
+        builder.Append("    public static string ").Append(generatedMethodName).Append('(');
+
+        AddParameters(builder, parameterNames, false);
+
+        builder.Append(") => $\"").Append(interpolatedPath).AppendLine("\";").AppendLine();
+
+        // Build extension method
+
+        if (!options.GenerateExtensions) return;
+
+        builder.Append(
+@"    /// <summary>
+    /// ").Append(path).AppendLine(@"
+    /// </summary>");
+
+        builder.Append("    public static string ").Append("NavigateTo").Append(generatedMethodName).Append('(')
+            .Append("this Microsoft.AspNetCore.Components.NavigationManager navigationManager");
+
+        AddParameters(builder, parameterNames, true);
+
+        builder.Append(") => ").Append(generatedMethodName).Append('(');
+
+        foreach (var parameter in parameterNames)
+        {
+            builder.Append(parameter.ParameterName).Append(", ");
+        }
+
+        if (parameterNames.Length > 0) RemoveTrailingComma(builder);
+
+        builder.AppendLine(");").AppendLine();
+    }
+
+    private static void AddParameters(StringBuilder builder, RouteParameter[] parameterNames, bool alreadyHasParameter)
+    {
+        if (alreadyHasParameter) builder.Append(", ");
 
         foreach (var parameter in parameterNames)
         {
             builder.Append(parameter.ParameterType).Append(" ").Append(parameter.ParameterName).Append(", ");
         }
 
-        if (parameterNames.Length > 0)
+        if (parameterNames.Length > 0 || (alreadyHasParameter && parameterNames.Length == 0))
         {
-            // ", "
-            builder.Remove(builder.Length - 2, 2);
+            RemoveTrailingComma(builder);
         }
-
-
-        builder.Append(") => $\"").Append(interpolatedPath).AppendLine("\";");
     }
+
+    private static void RemoveTrailingComma(StringBuilder builder) => builder.Remove(builder.Length - 2, 2);
 
     private static ImmutableArray<string> GetRoutes(Compilation compilation, ClassDeclarationSyntax component)
     {
