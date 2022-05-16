@@ -19,6 +19,7 @@ public class RouteGenerator : ISourceGenerator
     {
         public string ClassName { get; set; } = default!;
         public string Namespace { get; set; } = default!;
+        public bool ExtensionMethods { get; set; } = false;
 
         public GenerationOptions MakeDefault(GeneratorExecutionContext context)
         {
