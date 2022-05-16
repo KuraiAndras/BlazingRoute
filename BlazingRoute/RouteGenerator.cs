@@ -17,13 +17,13 @@ public class RouteGenerator : ISourceGenerator
 
     public class GenerationOptions
     {
-        public string ClassName { get; set; } = default!;
+        public string ClassName { get; set; } = "Routes";
         public string Namespace { get; set; } = default!;
         public bool GenerateExtensions { get; set; } = false;
+        public string ExtensionPrefix { get; set; } = "NavigateTo";
 
         public GenerationOptions MakeDefault(GeneratorExecutionContext context)
         {
-            ClassName ??= "Routes";
             Namespace ??= context.Compilation.AssemblyName ?? throw new InvalidOperationException("Compilation has no AssemblyName");
 
             return this;
@@ -275,7 +275,7 @@ public static partial class ").AppendLine(options.ClassName)
     /// ").Append(path).AppendLine(@"
     /// </summary>");
 
-        builder.Append("    public static string ").Append("NavigateTo").Append(generatedMethodName).Append('(');
+        builder.Append("    public static string ").Append(options.ExtensionPrefix).Append(generatedMethodName).Append('(');
 
         AddParameters(builder, new[] { new RouteParameter("this Microsoft.AspNetCore.Components.NavigationManager", "navigationManager") }.Concat(parameterNames).ToArray());
 

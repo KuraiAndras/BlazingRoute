@@ -3,4 +3,5 @@
   <ClassName>MyRoutes</ClassName>
   <Namespace>BlazingRoute.Sample.Routes</Namespace>
   <GenerateExtensions>true</GenerateExtensions>
+  <ExtensionPrefix></ExtensionPrefix>
 </GenerationOptions>
