@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
+using BlazingRoute.Extensions;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -202,14 +204,14 @@ public static partial class ").AppendLine(options.ClassName)
                 var namePart = parts[0];
                 var isNullable = namePart.EndsWith("?") || namePart.StartsWith("*");
 
-                var parameterName = namePart.TrimEnd('?').TrimStart('*');
+                var parameterName = namePart.TrimEnd('?').TrimStart('*').ToLowerFirstChar();
                 var parameterType = isNullable ? "string?" : "string";
 
                 parameter = new RouteParameter(parameterType, parameterName);
             }
             else
             {
-                var parameterName = parts[0];
+                var parameterName = parts[0].ToLowerFirstChar();
                 var parameterType = parts[1] switch
                 {
                     "datetime" => "DateTime",
