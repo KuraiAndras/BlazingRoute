@@ -144,8 +144,8 @@ public class RouteGenerator : ISourceGenerator
 
 namespace ").Append(options.Namespace).Append(@";
 
-public static partial class ").AppendLine(options.ClassName).Append(@"
-{");
+public static partial class ").AppendLine(options.ClassName)
+.AppendLine(@"{");
 
         builder.AppendLine(
 @"    public static ImmutableArray<string> All { get; } = new []
