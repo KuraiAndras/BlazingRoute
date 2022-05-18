@@ -13,7 +13,7 @@ namespace BlazingRoute;
 [Generator]
 public class RouteGenerator : ISourceGenerator
 {
-    record RouteParameter(string ParameterType, string ParameterName);
+    record RouteParameter(string ParameterType, string ParameterName, bool IsExtension);
 
     record PageRoutes(string PageName, ImmutableArray<string> RouteStrings);
 
@@ -170,7 +170,7 @@ public static partial class ").AppendLine(options.ClassName)
             {
                 var path = route.RouteStrings[j];
 
-                CreateInterpolationMethod(builder, route.PageName, path, j, options);
+                AddMethod(builder, route.PageName, path, j, options);
             }
 
             if (i != routes.Length - 1) builder.AppendLine();
@@ -182,52 +182,60 @@ public static partial class ").AppendLine(options.ClassName)
         return builder.ToString();
     }
 
-    private static void CreateInterpolationMethod(StringBuilder builder, string pageName, string path, int index, GenerationOptions options)
+    private static void AddMethod(StringBuilder builder, string pageName, string path, int index, GenerationOptions options)
     {
         // Generate parameter data
 
         var parameterMatches = ParametersRegex.Matches(path);
 
-        var parameterNames = new RouteParameter[parameterMatches.Count];
+        var parameterNames = GetParametersForRoute(parameterMatches);
 
-        for (var i = 0; i < parameterMatches.Count; i++)
+        // Build method
+
+        builder.Append(
+@"    /// <summary>
+    /// ").Append(path).AppendLine(@"
+    /// </summary>");
+
+        var generatedMethodName = pageName + (index != 0 ? index.ToString() : string.Empty);
+
+        builder.Append("    public static string ").Append(generatedMethodName).Append('(');
+
+        AddParameters(builder, parameterNames);
+
+        builder.Append(") => $\"");
+
+        CreateInterpolatedRouteString(builder, path, parameterMatches, parameterNames);
+
+        builder.AppendLine("\";").AppendLine();
+
+        // Build extension method
+
+        if (!options.GenerateExtensions) return;
+
+        builder.Append(
+@"    /// <summary>
+    /// ").Append(path).AppendLine(@"
+    /// </summary>");
+
+        builder.Append("    public static void ").Append(options.ExtensionPrefix).Append(generatedMethodName).Append('(');
+
+        AddParameters(builder, new[] { new RouteParameter("Microsoft.AspNetCore.Components.NavigationManager", "navigationManager", true) }.Concat(parameterNames).ToImmutableArray());
+
+        builder.Append(") => navigationManager.NavigateTo(").Append(generatedMethodName).Append('(');
+
+        foreach (var parameter in parameterNames)
         {
-            Match parameterMatch = parameterMatches[i];
-
-            var parts = parameterMatch.Value.TrimStart('{').TrimEnd('}').Split(':');
-
-            RouteParameter parameter;
-
-            // strings are only marked as: @page "/{parameter}"
-            if (parts.Length == 1)
-            {
-                var namePart = parts[0];
-                var isNullable = namePart.EndsWith("?") || namePart.StartsWith("*");
-
-                var parameterName = namePart.TrimEnd('?').TrimStart('*').ToLowerFirstChar();
-                var parameterType = isNullable ? "string?" : "string";
-
-                parameter = new RouteParameter(parameterType, parameterName);
-            }
-            else
-            {
-                var parameterName = parts[0].ToLowerFirstChar();
-                var parameterType = parts[1] switch
-                {
-                    "datetime" => "DateTime",
-                    "datetime?" => "DateTime?",
-                    "guid" => "Guid",
-                    "guid?" => "Guid?",
-                    var other => other,
-                };
-                parameter = new RouteParameter(parameterType, parameterName);
-            }
-
-            parameterNames[i] = parameter;
+            builder.Append(parameter.ParameterName).Append(", ");
         }
 
-        // Create route interpolation
+        if (parameterNames.Length > 0) RemoveTrailingComma(builder);
 
+        builder.AppendLine("));").AppendLine();
+    }
+
+    private static void CreateInterpolatedRouteString(StringBuilder builder, string path, MatchCollection parameterMatches, ImmutableArray<RouteParameter> parameterNames)
+    {
         var interpolatedPath = path;
 
         for (var i = 0; i < parameterMatches.Count; i++)
@@ -253,50 +261,58 @@ public static partial class ").AppendLine(options.ClassName)
             interpolatedPath = interpolatedPath.Replace(match.Value, "{" + parameterInfo.ParameterName + interpolationEnd);
         }
 
-        // Build method
-
-        builder.Append(
-@"    /// <summary>
-    /// ").Append(path).AppendLine(@"
-    /// </summary>");
-
-        var generatedMethodName = pageName + (index != 0 ? index.ToString() : string.Empty);
-
-        builder.Append("    public static string ").Append(generatedMethodName).Append('(');
-
-        AddParameters(builder, parameterNames);
-
-        builder.Append(") => $\"").Append(interpolatedPath).AppendLine("\";").AppendLine();
-
-        // Build extension method
-
-        if (!options.GenerateExtensions) return;
-
-        builder.Append(
-@"    /// <summary>
-    /// ").Append(path).AppendLine(@"
-    /// </summary>");
-
-        builder.Append("    public static void ").Append(options.ExtensionPrefix).Append(generatedMethodName).Append('(');
-
-        AddParameters(builder, new[] { new RouteParameter("this Microsoft.AspNetCore.Components.NavigationManager", "navigationManager") }.Concat(parameterNames).ToArray());
-
-        builder.Append(") => navigationManager.NavigateTo(").Append(generatedMethodName).Append('(');
-
-        foreach (var parameter in parameterNames)
-        {
-            builder.Append(parameter.ParameterName).Append(", ");
-        }
-
-        if (parameterNames.Length > 0) RemoveTrailingComma(builder);
-
-        builder.AppendLine("));").AppendLine();
+        builder.Append(interpolatedPath);
     }
 
-    private static void AddParameters(StringBuilder builder, RouteParameter[] parameterNames)
+    private static ImmutableArray<RouteParameter> GetParametersForRoute(MatchCollection parameterMatches)
+    {
+        var parameterNames = ImmutableArray.CreateBuilder<RouteParameter>(parameterMatches.Count);
+
+        for (var i = 0; i < parameterMatches.Count; i++)
+        {
+            Match parameterMatch = parameterMatches[i];
+
+            var parts = parameterMatch.Value.TrimStart('{').TrimEnd('}').Split(':');
+
+            RouteParameter parameter;
+
+            // strings are only marked as: @page "/{parameter}"
+            if (parts.Length == 1)
+            {
+                var namePart = parts[0];
+                var isNullable = namePart.EndsWith("?") || namePart.StartsWith("*");
+
+                var parameterName = namePart.TrimEnd('?').TrimStart('*').ToLowerFirstChar();
+                var parameterType = isNullable ? "string?" : "string";
+
+                parameter = new RouteParameter(parameterType, parameterName, false);
+            }
+            else
+            {
+                var parameterName = parts[0].ToLowerFirstChar();
+                var parameterType = parts[1] switch
+                {
+                    "datetime" => "DateTime",
+                    "datetime?" => "DateTime?",
+                    "guid" => "Guid",
+                    "guid?" => "Guid?",
+                    var other => other,
+                };
+                parameter = new RouteParameter(parameterType, parameterName, false);
+            }
+
+            parameterNames.Add(parameter);
+        }
+
+        return parameterNames.ToImmutable();
+    }
+
+    private static void AddParameters(StringBuilder builder, ImmutableArray<RouteParameter> parameterNames)
     {
         foreach (var parameter in parameterNames)
         {
+            if (parameter.IsExtension) builder.Append("this ");
+
             builder.Append(parameter.ParameterType).Append(" ").Append(parameter.ParameterName).Append(", ");
         }
 
