@@ -40,9 +40,19 @@ namespace Your.ProjectName
         public static string Index() => $"/";
 
         /// <summary>
+        /// /
+        /// </summary>
+        public static void Index(this NavigationManager navigationManager) => navigationManager.NavigateTo($"/");
+
+        /// <summary>
         /// /artists/{Id:guid}
         /// </summary>
         public static string Artists(Guid Id) => $"/artists/{Id.ToString("D", System.Globalization.CultureInfo.InvariantCulture)}";
+
+        /// <summary>
+        /// /artists/{Id:guid}
+        /// </summary>
+        public static string Artists(this NavigationManager navigationManager, Guid Id) => navigationManager.NavigateTo($"/artists/{Id.ToString("D", System.Globalization.CultureInfo.InvariantCulture)}");
     }
 }
 ```
@@ -57,7 +67,7 @@ namespace Your.ProjectName
 <button class="btn btn-primary" @onClick="@Navigate">Some Artist</button>
 
 @code {
-    private void Navigate() => Navigation.NavigateTo(Routes.Artists(Guid.NewGuid()));
+    private void Navigate() => Navigation.Artists(Guid.NewGuid());
 }
 ```
 

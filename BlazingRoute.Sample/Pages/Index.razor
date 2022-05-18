@@ -11,15 +11,15 @@
 @page "/non-nullable-int/{IntParameter:int}"
 @page "/non-nullable-long/{LongParameter:long}"
 
-@page "/nullable-string/{StringParameter?}"
-@page "/nullable-bool/{BoolParameter:bool?}"
-@page "/nullable-DateTime/{DateTimeParameter:datetime?}"
-@page "/nullable-decimal/{DecimalParameter:decimal?}"
-@page "/nullable-double/{DoubleParameter:double?}"
-@page "/nullable-float/{FloatParameter:float?}"
-@page "/nullable-Guid/{GuidParameter:guid?}"
-@page "/nullable-int/{IntParameter:int?}"
-@page "/nullable-long/{LongParameter:long?}"
+@page "/nullable-string/{NullableStringParameter?}"
+@page "/nullable-bool/{NullableBoolParameter:bool?}"
+@page "/nullable-DateTime/{NullableDateTimeParameter:datetime?}"
+@page "/nullable-decimal/{NullableDecimalParameter:decimal?}"
+@page "/nullable-double/{NullableDoubleParameter:double?}"
+@page "/nullable-float/{NullableFloatParameter:float?}"
+@page "/nullable-Guid/{NullableGuidParameter:guid?}"
+@page "/nullable-int/{NullableIntParameter:int?}"
+@page "/nullable-long/{NullableLongParameter:long?}"
 
 @page "/multiple/{MultipleDoubeParameter:double}/{MultipleIntParameter:int?}"
 
@@ -59,31 +59,31 @@
 	Nullables:
 </p>
 <p>
-	NullableStringParameter: @NullableStringParameter
+	NullableStringParameter: @NullableStringParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex10("hello"))">Navigate</button>
 </p>
 <p>
-	NullableBoolParameter: @NullableBoolParameter
+	NullableBoolParameter: @NullableBoolParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex11(true))">Navigate</button>
 </p>
 <p>
-	NullableDateTimeParameter: @NullableDateTimeParameter
+	NullableDateTimeParameter: @NullableDateTimeParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex12(DateTime.Now))">Navigate</button>
 </p>
 <p>
-	NullableDecimalParameter: @NullableDecimalParameter
+	NullableDecimalParameter: @NullableDecimalParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex13(1234m))">Navigate</button>
 </p>
 <p>
-	NullableDecimalParameter: @NullableDecimalParameter
+	NullableDoubleParameter: @NullableDoubleParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex14(2.5))">Navigate</button>
 </p>
 <p>
-	NullableDoubleParameter: @NullableDoubleParameter
+	NullableFloatParameter: @NullableFloatParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex15(2.6f))">Navigate</button>
 </p>
 <p>
-	NullableGuidParameter: @NullableGuidParameter
+	NullableGuidParameter: @NullableGuidParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex16(Guid.NewGuid()))">Navigate</button>
 </p>
 <p>
-	NullableIntParameter: @NullableIntParameter
+	NullableIntParameter: @NullableIntParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex17(3))">Navigate</button>
 </p>
 <p>
-	NullableLongParameter: @NullableLongParameter
+	NullableLongParameter: @NullableLongParameter <button class="btn btn-primary" @onclick="@(() => Navigation.NavigateToIndex18(long.MaxValue))">Navigate</button>
 </p>
 
 <p>
