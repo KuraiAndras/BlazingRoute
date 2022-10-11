@@ -149,17 +149,20 @@ namespace ").Append(options.Namespace).Append(@";
 public static partial class ").AppendLine(options.ClassName)
 .AppendLine(@"{");
 
-        builder.AppendLine(
-@"    public static ImmutableArray<string> All { get; } = new []
-    {");
-
-        foreach (var route in routes.SelectMany(r => r.RouteStrings))
+        if (routes.Length != 0)
         {
-            builder.Append("        \"").Append(route).AppendLine("\",");
-        }
+            builder.AppendLine(
+@"    public static ImmutableArray<string> All { get; } = new []
+{");
 
-        builder.AppendLine(
+            foreach (var route in routes.SelectMany(r => r.RouteStrings))
+            {
+                builder.Append("        \"").Append(route).AppendLine("\",");
+            }
+
+            builder.AppendLine(
 "    }.ToImmutableArray();");
+        }
 
         builder.AppendLine();
 
